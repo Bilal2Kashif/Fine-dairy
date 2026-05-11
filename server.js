@@ -1,7 +1,7 @@
-// server.js - Fine Dairy Web App Entry Point
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const methodOverride = require('method-override');
 const path = require('path');
 
@@ -18,6 +18,10 @@ app.use(express.json());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
+  store: new pgSession({
+    conString: process.env.DATABASE_URL,
+    createTableIfMissing: true,
+  }),
   secret: process.env.SESSION_SECRET || 'finedairy_secret',
   resave: false,
   saveUninitialized: false,
@@ -64,6 +68,10 @@ app.use((err, req, res, next) => {
   res.status(500).render('error', { title: 'Server Error', message: err.message });
 });
 
-app.listen(PORT, () => {
-  console.log(`🥛  Fine Dairy running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Fine Dairy running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
