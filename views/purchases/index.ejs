@@ -1,0 +1,161 @@
+<%- include('../partials/header') %>
+
+<div class="page-split">
+
+  <!-- Purchase Form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Record Purchase</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/purchases" id="purchase-form">
+        <div class="form-group">
+          <label class="form-label">Supplier</label>
+          <select name="SupplierID" class="form-control" required>
+            <option value="">— Select Supplier —</option>
+            <% suppliers.forEach(s => { %>
+              <option value="<%= s.SupplierID %>"><%= s.SupplierName %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <select name="ProductID" id="ProductID" class="form-control">
+            <option value="">— Select Product —</option>
+            <% products.forEach(p => { %>
+              <option value="<%= p.ProductID %>"><%= p.ProductName %> (<%= p.Unit %>)</option>
+            <% }) %>
+          </select>
+          <div class="form-hint" style="font-size:0.82rem;color:var(--text-muted);margin-top:6px">
+            Leave product blank to record a payment-only entry.
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" id="Quantity" name="Quantity" class="form-control"
+              step="0.01" min="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Price (Rs)</label>
+            <input type="number" id="UnitPrice" name="UnitPrice" class="form-control"
+              step="0.01" min="0" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total Amount</label>
+          <div id="calc-total" style="font-family:'Playfair Display',serif;font-size:1.4rem;
+            color:var(--primary);font-weight:700;padding:4px 0">Rs 0.00</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Amount Paid (Rs)</label>
+          <input type="number" name="PaidAmount" id="PaidAmount" class="form-control"
+            step="0.01" min="0" placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Purchase Date</label>
+          <input type="date" name="PurchaseDate" class="form-control"
+            value="<%= new Date().toISOString().split('T')[0] %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes (Optional)</label>
+          <input type="text" name="Notes" class="form-control" placeholder="Any remarks...">
+        </div>
+        <button type="submit" class="btn btn-primary">✓ Record Purchase</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Purchase History -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Purchase History</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= purchases.length %> entries</span>
+    </div>
+    <!-- Filter bar -->
+<!-- Filter bar -->
+<div style="padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border)">
+  <form method="GET" action="/purchases" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+    <div>
+      <label class="form-label" style="margin-bottom:3px">From</label>
+      <input type="date" name="from" class="form-control" style="width:145px" value="<%= filters.from||'' %>">
+    </div>
+    <div>
+      <label class="form-label" style="margin-bottom:3px">To</label>
+      <input type="date" name="to" class="form-control" style="width:145px" value="<%= filters.to||'' %>">
+    </div>
+    <div>
+      <label class="form-label" style="margin-bottom:3px">Supplier</label>
+      <select name="supplier" class="form-control" style="width:150px">
+        <option value="">All</option>
+        <% suppliers.forEach(s => { %>
+          <option value="<%= s.SupplierID %>" <%= filters.supplier==s.SupplierID?'selected':'' %>>
+            <%= s.SupplierName %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+    <div>
+      <label class="form-label" style="margin-bottom:3px">Product</label>
+      <select name="product" class="form-control" style="width:150px">
+        <option value="">All</option>
+        <% products.forEach(p => { %>
+          <option value="<%= p.ProductID %>" <%= filters.product==p.ProductID?'selected':'' %>>
+            <%= p.ProductName %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <button type="submit" class="btn btn-primary" style="width:auto;padding:9px 16px">Filter</button>
+      <a href="/purchases" class="btn" style="background:var(--surface);border:1.5px solid var(--border);padding:9px 14px">Clear</a>
+    </div>
+  </form>
+</div>
+
+    <div class="table-wrap">
+      <% if (purchases.length === 0) { %>
+        <div class="empty-state"><div class="icon">🛒</div><p>No purchases recorded yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Supplier</th><th>Product</th><th>Qty</th><th>Price</th><th>Total</th><th>Paid</th><th>Due</th></tr>
+        </thead>
+        <tbody>
+          <% purchases.forEach(p => { %>
+          <tr>
+            <td class="muted"><%= new Date(p.PurchaseDate).toLocaleDateString('en-PK') %></td>
+            <td style="font-weight:500"><%= p.SupplierName %></td>
+            <td><%= p.ProductName %></td>
+            <td><%= p.Quantity %> <%= p.Unit %></td>
+            <td class="muted">Rs <%= Number(p.UnitPrice).toLocaleString('en-PK') %></td>
+            <td style="font-weight:600;color:var(--primary)">
+              Rs <%= Number(p.TotalAmount).toLocaleString('en-PK') %>
+            </td>
+            <td class="muted">Rs <%= Number(p.PaidAmount || 0).toLocaleString('en-PK') %></td>
+            <td style="font-weight:600;color:var(--warning)">Rs <%= Number(p.BalanceAmount || 0).toLocaleString('en-PK') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+        <tfoot>
+  <tr style="background:var(--surface2)">
+    <td colspan="5" style="padding:11px 14px;font-weight:600;text-align:right">Total (<%= purchases.length %> records):</td>
+    <td style="padding:11px 14px;font-weight:700;color:var(--primary)">
+      Rs <%= purchases.reduce((s,p)=>s+Number(p.TotalAmount),0).toLocaleString('en-PK') %>
+    </td>
+    <td style="padding:11px 14px;font-weight:700;color:var(--primary)">
+      Rs <%= purchases.reduce((s,p)=>s+Number(p.PaidAmount||0),0).toLocaleString('en-PK') %>
+    </td>
+    <td style="padding:11px 14px;font-weight:700;color:var(--warning)">
+      Rs <%= purchases.reduce((s,p)=>s+Number(p.BalanceAmount||0),0).toLocaleString('en-PK') %>
+    </td>
+  </tr>
+</tfoot>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>

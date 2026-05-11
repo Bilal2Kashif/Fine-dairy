@@ -1,0 +1,152 @@
+<%- include('../partials/header') %>
+<!-- Manual Stock Controls -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px">
+  <div class="card">
+    <div class="card-header"><span class="card-title">➕ Add Stock (Production)</span></div>
+    <div class="card-body">
+      <form method="POST" action="/stock/add">
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <select name="ProductID" class="form-control" required>
+            <option value="">— Select —</option>
+            <% products.forEach(p => { %>
+              <option value="<%= p.ProductID %>"><%= p.ProductName %> (<%= p.Unit %>)</option>
+            <% }) %>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" name="Quantity" class="form-control" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <input type="text" name="Notes" class="form-control" placeholder="e.g. Morning batch">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary">+ Add to Stock</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><span class="card-title">➖ Remove Stock (Wastage/Adjustment)</span></div>
+    <div class="card-body">
+      <form method="POST" action="/stock/remove">
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <select name="ProductID" class="form-control" required>
+            <option value="">— Select —</option>
+            <% products.forEach(p => { %>
+              <option value="<%= p.ProductID %>"><%= p.ProductName %> (<%= p.Unit %>)</option>
+            <% }) %>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" name="Quantity" class="form-control" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes</label>
+            <input type="text" name="Notes" class="form-control" placeholder="e.g. Spoilage">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="background:var(--danger);color:#fff">− Remove Stock</button>
+      </form>
+    </div>
+  </div>
+</div>
+<div class="content-grid">
+
+  <!-- Current Inventory -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Current Stock Inventory</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= inventory.length %> products</span>
+    </div>
+    <div class="table-wrap">
+      <% if (inventory.length === 0) { %>
+        <div class="empty-state">
+          <div class="icon">📊</div>
+          <p>No stock data yet. Add products and record purchases.</p>
+        </div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Product</th><th>Category</th><th>Level</th><th>Qty / Unit</th></tr>
+        </thead>
+        <tbody>
+          <%
+            const maxQty = Math.max(...inventory.map(i => i.Quantity), 1);
+          %>
+          <% inventory.forEach(item => { %>
+          <%
+            const pct = (item.Quantity / maxQty) * 100;
+            const cls = item.Quantity < 5 ? 'low' : item.Quantity > maxQty * 0.6 ? 'high' : '';
+          %>
+          <tr>
+            <td style="font-weight:500"><%= item.ProductName %></td>
+            <td class="muted"><%= item.Category %></td>
+            <td>
+              <div class="qty-bar-wrap">
+                <div class="qty-bar">
+                  <div class="qty-bar-fill <%= cls %>" data-pct="<%= pct %>"></div>
+                </div>
+                <% if (item.Quantity < 10) { %>
+                  <span class="badge badge-low">Low</span>
+                <% } else { %>
+                  <span class="badge badge-ok">OK</span>
+                <% } %>
+              </div>
+            </td>
+            <td style="font-weight:600;color:var(--primary)">
+              <%= item.Quantity %> <span style="font-weight:400;color:var(--text-muted);font-size:0.8rem"><%= item.Unit %></span>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Stock Log -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Stock Log</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)">Last 50 events</span>
+    </div>
+    <div class="table-wrap">
+      <% if (log.length === 0) { %>
+        <div class="empty-state"><div class="icon">📋</div><p>No stock movements yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>Reference</th></tr>
+        </thead>
+        <tbody>
+          <% log.forEach(l => { %>
+          <tr>
+            <td class="muted" style="white-space:nowrap">
+              <%= new Date(l.LogDate).toLocaleDateString('en-PK') %>
+            </td>
+            <td style="font-weight:500"><%= l.ProductName %></td>
+            <td>
+              <span class="badge <%= l.ChangeType === 'IN' ? 'badge-in' : 'badge-out' %>">
+                <%= l.ChangeType %>
+              </span>
+            </td>
+            <td style="font-weight:600"><%= l.Quantity %></td>
+            <td class="muted"><%= l.Reference || '—' %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>

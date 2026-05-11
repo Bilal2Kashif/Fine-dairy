@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="page-split">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Add New Customer</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/bakeries">
+        <div class="form-group">
+          <label class="form-label">Customer Name</label>
+          <input type="text" name="BakeryName" class="form-control" placeholder="e.g. Al-Fatah Bakery" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Number</label>
+          <input type="text" name="Contact" class="form-control" placeholder="03xx-xxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" name="Address" class="form-control" placeholder="Shop / Street / Area">
+        </div>
+        <button type="submit" class="btn btn-primary">+ Add Customer</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">All Customers</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= bakeries.filter(b=>b.IsActive).length %> active</span>
+    </div>
+    <div class="table-wrap">
+      <% if (bakeries.length === 0) { %>
+        <div class="empty-state"><div class="icon">🏪</div><p>No customers yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Contact</th><th>Address</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% bakeries.forEach(b => { %>
+          <tr>
+            <td style="font-weight:500"><%= b.BakeryName %></td>
+            <td class="muted"><%= b.Contact || '—' %></td>
+            <td class="muted"><%= b.Address || '—' %></td>
+            <td>
+              <span class="badge <%= b.IsActive ? 'badge-ok' : '' %>"
+                style="<%= !b.IsActive ? 'background:#f8d7da;color:#721c24' : '' %>">
+                <%= b.IsActive ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+            <td>
+              <% if (b.IsActive) { %>
+              <form method="POST" action="/bakeries/<%= b.BakeryID %>/delete" style="display:inline">
+                <button type="submit" class="btn btn-danger"
+                  data-confirm="Deactivate <%= b.BakeryName %>?">Deactivate</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>

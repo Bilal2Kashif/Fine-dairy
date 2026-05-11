@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= title %> — Fine Dairy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <img class="brand-icon" src="/img/cow.svg" alt="Cow" />
+    <div>
+      <div class="brand-name">Fine Dairy</div>
+      <div class="brand-sub">Management System</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="/" class="nav-item <%= title==='Dashboard'?'active':'' %>">
+      <span class="nav-icon">⬛</span> Dashboard
+    </a>
+    <div class="nav-section">Products & Partners</div>
+    <a href="/products" class="nav-item <%= title==='Products'?'active':'' %>">
+      <span class="nav-icon">📦</span> Products
+    </a>
+    <a href="/suppliers" class="nav-item <%= title==='Suppliers'?'active':'' %>">
+      <span class="nav-icon">🚛</span> Suppliers
+    </a>
+    <a href="/bakeries" class="nav-item <%= title==='Bakeries'?'active':'' %>">
+      <span class="nav-icon">🏪</span> Customers
+    </a>
+    <div class="nav-section">Transactions</div>
+    <a href="/purchases" class="nav-item <%= title==='Purchases'?'active':'' %>">
+      <span class="nav-icon">🛒</span> Purchases
+    </a>
+    <a href="/sales" class="nav-item <%= title==='Sales'?'active':'' %>">
+      <span class="nav-icon">💰</span> Sales
+    </a>
+    <a href="/outlet" class="nav-item <%= title==='Outlet Sales'?'active':'' %>">
+      <span class="nav-icon">🏪</span> Outlet Sales
+    </a>
+    <div class="nav-section">Inventory</div>
+    <a href="/stock" class="nav-item <%= title==='Stock'?'active':'' %>">
+      <span class="nav-icon">📊</span> Stock
+    </a>
+<div class="nav-section">Reports</div>
+<a href="/records" class="nav-item <%= title==='Records'?'active':'' %>">
+  <span class="nav-icon">📋</span> Party Records
+</a>
+  </nav>
+</aside>
+
+<main class="main-content">
+  <header class="topbar">
+    <div class="topbar-title"><%= title %></div>
+    <div class="topbar-meta">
+      <% if (user) { %>
+        <div class="topbar-user">Hi, <%= user.name %> <a href="/auth/logout">Logout</a></div>
+      <% } %>
+      <div class="topbar-date" id="topbar-date"></div>
+    </div>
+  </header>
+
+  <% if (success) { %>
+    <div class="alert alert-success"><span>✓</span> <%= success %></div>
+  <% } %>
+  <% if (error) { %>
+    <div class="alert alert-error"><span>✕</span> <%= error %></div>
+  <% } %>
+
+  <div class="page-body">

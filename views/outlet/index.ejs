@@ -1,0 +1,76 @@
+<%- include('../partials/header') %>
+<div class="page-split">
+  <div class="card">
+    <div class="card-header"><span class="card-title">Record Outlet Sale</span></div>
+    <div class="card-body">
+      <form method="POST" action="/outlet">
+        <div class="form-group">
+          <label class="form-label">Customer Name</label>
+          <input type="text" name="CustomerName" class="form-control" placeholder="Walk-in / Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product</label>
+          <select name="ProductID" class="form-control" required>
+            <option value="">— Select Product —</option>
+            <% products.forEach(p => { %>
+              <option value="<%= p.ProductID %>">
+                <%= p.ProductName %> (<%= p.Unit %>) — Stock: <%= p.Stock %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Quantity</label>
+            <input type="number" id="Quantity" name="Quantity" class="form-control" step="0.01" min="0.01" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Unit Price (Rs)</label>
+            <input type="number" id="UnitPrice" name="UnitPrice" class="form-control" step="0.01" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Total</label>
+          <div id="calc-total" style="font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--primary);font-weight:700">Rs 0.00</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" name="SaleDate" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <input type="text" name="Notes" class="form-control" placeholder="Optional">
+        </div>
+        <button type="submit" class="btn btn-primary">✓ Record Sale</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Outlet Sales History</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= sales.length %> entries</span>
+    </div>
+    <div class="table-wrap">
+      <% if (sales.length === 0) { %>
+        <div class="empty-state"><div class="icon">🏪</div><p>No outlet sales yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead><tr><th>Date</th><th>Customer</th><th>Product</th><th>Qty</th><th>Total</th></tr></thead>
+        <tbody>
+          <% sales.forEach(s => { %>
+          <tr>
+            <td class="muted"><%= new Date(s.SaleDate).toLocaleDateString('en-PK') %></td>
+            <td style="font-weight:500"><%= s.CustomerName || 'Walk-in' %></td>
+            <td><%= s.ProductName %></td>
+            <td><%= s.Quantity %> <%= s.Unit %></td>
+            <td style="font-weight:600;color:var(--success)">Rs <%= Number(s.TotalAmount).toLocaleString('en-PK') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+</div>
+<%- include('../partials/footer') %>

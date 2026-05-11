@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+
+<div class="page-split">
+
+  <!-- Add Product Form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Add New Product</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/products">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input type="text" name="ProductName" class="form-control" placeholder="e.g. Full Cream Milk" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <select name="Unit" class="form-control" required>
+            <option value="kg">kg</option>
+            <option value="litre">Litre</option>
+            <option value="piece">Piece</option>
+            <option value="dozen">Dozen</option>
+            <option value="pack">Pack</option>
+            <option value="box">Box</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input type="text" name="Category" class="form-control" placeholder="e.g. Dairy, Bakery Item" value="Dairy">
+        </div>
+        <button type="submit" class="btn btn-primary">+ Add Product</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Products List -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">All Products</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= products.filter(p=>p.IsActive).length %> active</span>
+    </div>
+    <div class="table-wrap">
+      <% if (products.length === 0) { %>
+        <div class="empty-state"><div class="icon">📦</div><p>No products yet. Add one!</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Unit</th><th>Category</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% products.forEach(p => { %>
+          <tr>
+            <td style="font-weight:500"><%= p.ProductName %></td>
+            <td class="muted"><%= p.Unit %></td>
+            <td class="muted"><%= p.Category %></td>
+            <td>
+              <% if (p.IsActive) { %>
+                <span class="badge badge-ok">Active</span>
+              <% } else { %>
+                <span class="badge" style="background:#f8d7da;color:#721c24">Inactive</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (p.IsActive) { %>
+              <form method="POST" action="/products/<%= p.ProductID %>/delete" style="display:inline">
+                <button type="submit" class="btn btn-danger"
+                  data-confirm="Deactivate <%= p.ProductName %>?">Deactivate</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>

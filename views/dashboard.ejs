@@ -1,0 +1,93 @@
+<%- include('partials/header') %>
+
+<% if (typeof dbError !== 'undefined' && dbError) { %>
+  <div class="alert alert-error" style="border-radius:8px;margin-bottom:20px;">
+    ⚠️ <strong>Database not connected:</strong> <%= dbError %>
+    <br><small>Check your <code>.env</code> file and run <code>schema.sql</code> in SSMS first.</small>
+  </div>
+<% } %>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Active Products</div>
+    <div class="stat-value"><%= stats.products %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Suppliers</div>
+    <div class="stat-value"><%= stats.suppliers %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Customers</div>
+    <div class="stat-value"><%= stats.bakeries %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Purchases (30d)</div>
+    <div class="stat-value money"><%= Number(stats.purchaseTotal).toLocaleString('en-PK') %></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">Sales (30d)</div>
+    <div class="stat-value money"><%= Number(stats.salesTotal).toLocaleString('en-PK') %></div>
+  </div>
+</div>
+
+<div class="content-grid">
+
+  <!-- Recent Activity -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Recent Transactions</span>
+      <small style="color:var(--text-muted)">Last 8 entries</small>
+    </div>
+    <div class="table-wrap">
+      <% if (recentActivity.length === 0) { %>
+        <div class="empty-state"><div class="icon">📋</div><p>No transactions yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th><th>Party</th><th>Product</th><th>Qty</th><th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% recentActivity.forEach(r => { %>
+          <tr>
+            <td><span class="activity-type type-<%= r.Type %>"><%= r.Type %></span></td>
+            <td><%= r.Party %></td>
+            <td><%= r.Product %></td>
+            <td><%= r.Quantity %></td>
+            <td style="font-weight:600">Rs <%= Number(r.Amount).toLocaleString('en-PK') %></td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Low Stock -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">⚠️ Low Stock Alerts</span>
+      <a href="/stock" style="font-size:0.82rem;color:var(--primary);font-weight:600">View All →</a>
+    </div>
+    <div class="card-body">
+      <% if (lowStock.length === 0) { %>
+        <div class="empty-state"><div class="icon">✅</div><p>All stock levels are good!</p></div>
+      <% } else { %>
+        <% lowStock.forEach(item => { %>
+        <div class="low-stock-item">
+          <div>
+            <div style="font-weight:600"><%= item.ProductName %></div>
+            <div class="muted" style="font-size:0.78rem;color:var(--text-muted)"><%= item.Unit %></div>
+          </div>
+          <div class="low-qty"><%= item.Quantity %> <span style="font-size:0.7rem;font-weight:400"><%= item.Unit %></span></div>
+        </div>
+        <% }) %>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/footer') %>

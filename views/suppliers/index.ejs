@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<div class="page-split">
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Add New Supplier</span>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/suppliers">
+        <div class="form-group">
+          <label class="form-label">Supplier Name</label>
+          <input type="text" name="SupplierName" class="form-control" placeholder="e.g. Punjab Dairy Farm" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contact Number</label>
+          <input type="text" name="Contact" class="form-control" placeholder="03xx-xxxxxxx">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <input type="text" name="Address" class="form-control" placeholder="City, Area">
+        </div>
+        <button type="submit" class="btn btn-primary">+ Add Supplier</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">All Suppliers</span>
+      <span style="font-size:0.82rem;color:var(--text-muted)"><%= suppliers.filter(s=>s.IsActive).length %> active</span>
+    </div>
+    <div class="table-wrap">
+      <% if (suppliers.length === 0) { %>
+        <div class="empty-state"><div class="icon">🚛</div><p>No suppliers yet.</p></div>
+      <% } else { %>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Contact</th><th>Address</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% suppliers.forEach(s => { %>
+          <tr>
+            <td style="font-weight:500"><%= s.SupplierName %></td>
+            <td class="muted"><%= s.Contact || '—' %></td>
+            <td class="muted"><%= s.Address || '—' %></td>
+            <td>
+              <span class="badge <%= s.IsActive ? 'badge-ok' : '' %>"
+                style="<%= !s.IsActive ? 'background:#f8d7da;color:#721c24' : '' %>">
+                <%= s.IsActive ? 'Active' : 'Inactive' %>
+              </span>
+            </td>
+            <td>
+              <% if (s.IsActive) { %>
+              <form method="POST" action="/suppliers/<%= s.SupplierID %>/delete" style="display:inline">
+                <button type="submit" class="btn btn-danger"
+                  data-confirm="Deactivate <%= s.SupplierName %>?">Deactivate</button>
+              </form>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } %>
+    </div>
+  </div>
+
+</div>
+
+<%- include('../partials/footer') %>

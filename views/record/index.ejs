@@ -1,0 +1,186 @@
+<%- include('../partials/header') %>
+
+<div style="display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start">
+
+  <!-- Left: Picker -->
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><span class="card-title">🏪 Bakeries</span></div>
+      <div style="padding:8px">
+        <% bakeries.forEach(b => { %>
+          <a href="/records/bakery/<%= b.BakeryID %>"
+            class="record-link" 
+            data-type="bakery"
+            data-id="<%= b.BakeryID %>"
+            style="display:block;padding:9px 12px;border-radius:7px;text-decoration:none;font-size:0.88rem;color:var(--text);">
+            <%= b.BakeryName %>
+          </a>
+        <% }) %>
+        <script>
+          (function() {
+            const partyType = <%- JSON.stringify(typeof partyType !== 'undefined' ? partyType : null) %>;
+            const partyId = <%- JSON.stringify(typeof partyId !== 'undefined' ? partyId : null) %>;
+            if (partyType && partyId) {
+              document.querySelectorAll('[data-type="bakery"]').forEach(link => {
+                if (partyType === 'bakery' && partyId == link.dataset.id) {
+                  link.style.background = 'var(--accent)';
+                  link.style.fontWeight = '600';
+                }
+              });
+            }
+          })();
+        </script>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><span class="card-title">🚛 Suppliers</span></div>
+      <div style="padding:8px">
+        <% suppliers.forEach(s => { %>
+          <a href="/records/supplier/<%= s.SupplierID %>"
+            class="record-link"
+            data-type="supplier"
+            data-id="<%= s.SupplierID %>"
+            style="display:block;padding:9px 12px;border-radius:7px;text-decoration:none;font-size:0.88rem;color:var(--text);">
+            <%= s.SupplierName %>
+          </a>
+        <% }) %>
+        <script>
+          (function() {
+            const partyType = <%- JSON.stringify(typeof partyType !== 'undefined' ? partyType : null) %>;
+            const partyId = <%- JSON.stringify(typeof partyId !== 'undefined' ? partyId : null) %>;
+            if (partyType && partyId) {
+              document.querySelectorAll('[data-type="supplier"]').forEach(link => {
+                if (partyType === 'supplier' && partyId == link.dataset.id) {
+                  link.style.background = 'var(--accent)';
+                  link.style.fontWeight = '600';
+                }
+              });
+            }
+          })();
+        </script>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Records -->
+  <div>
+    <% if (!data) { %>
+      <div class="card"><div class="empty-state" style="padding:80px 20px">
+        <div class="icon">📋</div>
+        <p>Select a bakery or supplier from the left to view their records.</p>
+      </div></div>
+    <% } else { %>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title"><%= partyName %></span>
+        <span style="font-size:0.82rem;color:var(--text-muted)">
+          Total: Rs <%= data.reduce((s,r)=>s+Number(r.TotalAmount),0).toLocaleString('en-PK') %>
+        </span>
+      </div>
+
+      <!-- Filters -->
+      <div style="padding:14px 16px;background:var(--surface2);border-bottom:1px solid var(--border);
+        display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <% const downloadQuery = new URLSearchParams({
+          from: filters.from || '',
+          to: filters.to || '',
+          product: filters.product || ''
+        }).toString(); %>
+        <form method="GET" action="/records/<%= partyType %>/<%= partyId %>"
+          style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
+          <div>
+            <label class="form-label" style="margin-bottom:4px">From</label>
+            <input type="date" name="from" class="form-control" style="width:150px"
+              value="<%= filters.from||'' %>">
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">To</label>
+            <input type="date" name="to" class="form-control" style="width:150px"
+              value="<%= filters.to||'' %>">
+          </div>
+          <div>
+            <label class="form-label" style="margin-bottom:4px">Product</label>
+            <select name="product" class="form-control" style="width:160px">
+              <option value="">All Products</option>
+              <% (products||[]).forEach(p => { %>
+                <option value="<%= p.ProductName %>"
+                  <%= filters.product===p.ProductName?'selected':'' %>>
+                  <%= p.ProductName %>
+                </option>
+              <% }) %>
+            </select>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <button type="submit" class="btn btn-primary" style="width:auto;padding:9px 18px">Filter</button>
+            <a href="/records/<%= partyType %>/<%= partyId %>" class="btn"
+              style="background:var(--surface);border:1.5px solid var(--border);padding:9px 14px">Clear</a>
+            <a href="/records/<%= partyType %>/<%= partyId %>/download?format=pdf&<%= downloadQuery %>"
+              class="btn" style="background:var(--surface);border:1.5px solid var(--border);padding:9px 14px">Download PDF</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-wrap">
+        <% if (data.length === 0) { %>
+          <div class="empty-state"><div class="icon">🔍</div><p>No records match the filter.</p></div>
+        <% } else { %>
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Product</th><th>Qty</th><th>Unit Price</th><th>Total</th><th>Paid</th><th>Due</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <% data.forEach(r => { %>
+            <tr>
+              <td class="muted"><%= new Date(r.TxDate).toLocaleDateString('en-PK') %></td>
+              <td style="font-weight:500"><%= r.ProductName %></td>
+              <td><%= r.Quantity %> <%= r.Unit %></td>
+              <td class="muted">Rs <%= Number(r.UnitPrice).toLocaleString('en-PK') %></td>
+              <td style="font-weight:600;color:var(--primary)">Rs <%= Number(r.TotalAmount).toLocaleString('en-PK') %></td>
+              <td class="muted">Rs <%= Number(r.PaidAmount || 0).toLocaleString('en-PK') %></td>
+              <td style="font-weight:600;color:var(--warning)">Rs <%= Number(r.BalanceAmount || 0).toLocaleString('en-PK') %></td>
+              <td class="muted"><%= r.Notes||'—' %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+          <tfoot>
+            <tr style="background:var(--surface2)">
+              <td colspan="4" style="padding:11px 14px;font-weight:600;text-align:right">Grand Total:</td>
+              <td style="padding:11px 14px;font-weight:700;color:var(--primary);font-size:1rem">
+                Rs <%= data.reduce((s,r)=>s+Number(r.TotalAmount),0).toLocaleString('en-PK') %>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr style="background:var(--surface2)">
+              <td colspan="4" style="padding:9px 14px;font-weight:600;text-align:right">
+                <%= partyType === 'bakery' ? 'Total Paid by Bakery:' : 'Total Paid to Supplier:' %>
+              </td>
+              <td style="padding:9px 14px;font-weight:700;color:var(--primary);font-size:0.98rem">
+                Rs <%= data.reduce((s,r)=>s+Number(r.PaidAmount||0),0).toLocaleString('en-PK') %>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr style="background:var(--surface2)">
+              <td colspan="4" style="padding:9px 14px;font-weight:600;text-align:right">
+                <%= partyType === 'bakery' ? 'Total Due from Bakery:' : 'Total Due to Supplier:' %>
+              </td>
+              <td style="padding:9px 14px;font-weight:700;color:var(--primary);font-size:0.98rem">
+                Rs <%= data.reduce((s,r)=>s+Number(r.BalanceAmount||0),0).toLocaleString('en-PK') %>
+              </td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<%- include('../partials/footer') %>
