@@ -6,10 +6,21 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false },
   max: 5,
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 10000,
+  connectionTimeoutMillis: 15000,
+});
+
+pool.on('error', (err) => {
+  console.error('Database connection error:', err.message);
 });
 
 async function getPool() {
+  try {
+    const client = await pool.connect();
+    client.release();
+  } catch (err) {
+    console.error('DB wake-up failed, retrying in 3s...', err.message);
+    await new Promise(res => setTimeout(res, 3000));
+  }
   return pool;
 }
 

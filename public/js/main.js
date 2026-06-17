@@ -79,3 +79,26 @@ document.querySelectorAll('.qty-bar-fill').forEach(bar => {
   const pct = parseFloat(bar.dataset.pct) || 0;
   bar.style.width = Math.min(pct, 100) + '%';
 });
+
+// Sidebar toggle for mobile
+const sidebarToggle = document.getElementById('sidebar-toggle');
+const sidebar = document.querySelector('.sidebar');
+const overlay = document.getElementById('sidebar-overlay');
+
+if (sidebarToggle && sidebar && overlay) {
+  sidebarToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+  // Close sidebar when a nav link is clicked (for mobile UX)
+  sidebar.querySelectorAll('.nav-item').forEach(link => {
+    link.addEventListener('click', () => {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  });
+}

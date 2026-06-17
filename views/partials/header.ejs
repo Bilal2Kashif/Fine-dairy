@@ -54,21 +54,28 @@
   </nav>
 </aside>
 
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
 <main class="main-content">
   <header class="topbar">
-    <div class="topbar-title"><%= title %></div>
+    <div class="topbar-left">
+      <button class="hamburger" id="sidebar-toggle" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="topbar-title"><%= title %></div>
+    </div>
     <div class="topbar-meta">
-      <% if (user) { %>
+      <% if (typeof user !== 'undefined' && user) { %>
         <div class="topbar-user">Hi, <%= user.name %> <a href="/auth/logout">Logout</a></div>
       <% } %>
       <div class="topbar-date" id="topbar-date"></div>
     </div>
   </header>
 
-  <% if (success) { %>
+  <% if (typeof success !== 'undefined' && success) { %>
     <div class="alert alert-success"><span>✓</span> <%= success %></div>
   <% } %>
-  <% if (error) { %>
+  <% if (typeof error !== 'undefined' && error) { %>
     <div class="alert alert-error"><span>✕</span> <%= error %></div>
   <% } %>
 
